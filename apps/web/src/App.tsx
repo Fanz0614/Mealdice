@@ -7,6 +7,10 @@ import './App.css'
 function App() {
   const [count, setCount] = useState(0)
   const [health, setHealth] = useState<string | null>(null)
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatReply, setChatReply] = useState<string | null>(null)
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
 
   return (
     <>
@@ -41,6 +45,55 @@ function App() {
           Check API Health
         </button>
         {health && <p>API response: {health}</p>}
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <h2>Chat</h2>
+          <input
+            type="text"
+            value={chatMessage}
+            onChange={(e) => setChatMessage(e.target.value)}
+            placeholder="Type a message..."
+            disabled={chatLoading}
+            style={{ marginRight: '0.5rem', padding: '0.5rem' }}
+          />
+          <button
+            type="button"
+            className="counter"
+            disabled={chatLoading || !chatMessage.trim()}
+            onClick={async () => {
+              setChatLoading(true)
+              setChatError(null)
+              setChatReply(null)
+              try {
+                const res = await fetch('/api/chat', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: chatMessage }),
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                  setChatError(data.error ?? 'Something went wrong')
+                  return
+                }
+                setChatReply(data.reply)
+              } catch {
+                setChatError('Network error. Is the API running?')
+              } finally {
+                setChatLoading(false)
+              }
+            }}
+          >
+            {chatLoading ? 'Sending...' : 'Send'}
+          </button>
+          {chatError && (
+            <p style={{ color: 'red', marginTop: '0.5rem' }}>{chatError}</p>
+          )}
+          {chatReply && (
+            <p style={{ marginTop: '0.5rem' }}>
+              <strong>Reply:</strong> {chatReply}
+            </p>
+          )}
+        </div>
       </section>
 
       <div className="ticks"></div>
