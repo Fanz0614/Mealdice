@@ -16,6 +16,7 @@ Guidelines:
 - 菜品搭配荤素平衡、口味不重复(不要三道菜都是辣/油炸)
 - instructions 每步一句话,整道菜 5-8 步
 - amount 优先数字 + 单位(如 3 + 个),模糊量用「少许」或「适量」
+- shoppingList 的 amount 按 servings 人数等比缩放(以 2 人份为基准)
 - name 用常见家常菜名,不造词
 
 // Examples: TBD in v2`

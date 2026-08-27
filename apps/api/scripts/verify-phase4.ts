@@ -2,7 +2,7 @@ import { ZodError } from 'zod'
 import {
   recommendRequestSchema,
   recommendResponseSchema,
-} from '../src/schemas/recommend.js'
+} from '@mealdice/shared'
 import { buildUserPrompt } from '../src/prompt/user.js'
 import { systemPrompt } from '../src/prompt/system.js'
 

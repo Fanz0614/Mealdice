@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+export const CUISINES = ['中餐', '日料', '意餐', '泰餐', '任意'] as const
+
 export const ingredientSchema = z.object({
   name: z.string().min(1),
   amount: z.union([z.number(), z.string()]),
@@ -18,12 +20,11 @@ export const dishSchema = z.object({
 export type Dish = z.infer<typeof dishSchema>
 
 export const recommendRequestSchema = z.object({
-  cuisine: z.enum(['中餐', '日料', '意餐', '泰餐', '任意']),
-  dietary: z
-    .array(z.enum(['素食', '无麸质', '无海鲜']))
-    .default([]),
-  includeSoup: z.boolean(),
-  includeDessert: z.boolean(),
+  cuisine: z.enum(CUISINES),
+  dietary: z.array(z.string()).default([]),
+  includeSoup: z.boolean().default(false),
+  includeDessert: z.boolean().default(false),
+  servings: z.number().int().positive().default(2),
   notes: z.string().max(500).optional(),
 })
 

@@ -1,9 +1,10 @@
-import type { RecommendRequest } from '../schemas/recommend.js'
+import type { RecommendRequest } from '@mealdice/shared'
 
 export function buildUserPrompt(req: RecommendRequest): string {
   const lines: string[] = []
 
   lines.push(`菜系:${req.cuisine}`)
+  lines.push(`人数:${req.servings}`)
 
   if (req.dietary.length > 0) {
     lines.push(`忌口:${req.dietary.join('、')}`)

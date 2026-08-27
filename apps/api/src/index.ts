@@ -2,7 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import Anthropic from '@anthropic-ai/sdk'
 import { AppError } from './errors.js'
-import { chatRequestSchema } from './schemas.js'
+import { chatRequestSchema } from '@mealdice/shared'
+import { recommendController } from './controllers/recommend.js'
 import { validateBody } from './middleware/validate.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -40,6 +41,8 @@ app.post('/chat', validateBody(chatRequestSchema), async (req, res) => {
 
   res.json({ reply })
 })
+
+app.post('/recommend', recommendController)
 
 app.use(errorHandler)
 
