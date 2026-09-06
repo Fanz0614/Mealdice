@@ -3,6 +3,7 @@ import type { Tool } from '@anthropic-ai/sdk/resources/messages/messages.js'
 import { anthropicClient } from '../clients/anthropic.js'
 import { systemPrompt } from '../prompt/system.js'
 import { buildUserPrompt } from '../prompt/user.js'
+import { create } from '../repositories/recommendations.js'
 import {
   recommendResponseSchema,
   type RecommendRequest,
@@ -11,9 +12,11 @@ import {
 
 const TOOL_NAME = 'submit_recommendation'
 const MODEL = 'claude-haiku-4-5-20251001'
+const MAX_SAVE_ATTEMPTS = 3
+const RETRY_DELAY_MS = 100
 
-export async function recommendService(
-  input: RecommendRequest,
+export async function generateRecommendation(
+  request: RecommendRequest,
 ): Promise<RecommendResponse> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY is not set')
@@ -23,7 +26,7 @@ export async function recommendService(
     model: MODEL,
     max_tokens: 4096,
     system: systemPrompt,
-    messages: [{ role: 'user', content: buildUserPrompt(input) }],
+    messages: [{ role: 'user', content: buildUserPrompt(request) }],
     tools: [
       {
         name: TOOL_NAME,
@@ -48,4 +51,34 @@ export async function recommendService(
 
   const parsed = z.object({ result: recommendResponseSchema }).parse(toolBlock.input)
   return parsed.result
+}
+
+export async function saveRecommendation(
+  userId: string,
+  request: RecommendRequest,
+  result: RecommendResponse,
+): Promise<{ id: string | null }> {
+  for (let attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
+    try {
+      const { id } = await create({
+        userId,
+        cuisine: request.cuisine,
+        servings: request.servings,
+        dietary: request.dietary,
+        result,
+      })
+      return { id }
+    } catch (err) {
+      if (attempt === MAX_SAVE_ATTEMPTS - 1) {
+        console.error('Failed to save recommendation:', {
+          userId,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        return { id: null }
+      }
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+    }
+  }
+
+  return { id: null }
 }

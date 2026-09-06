@@ -7,6 +7,7 @@ export type Recommendation = {
   cuisine: string
   servings: number
   dietary: string[]
+  status: RecommendResponse['status']
   result: RecommendResponse
   createdAt: string
 }
@@ -25,6 +26,7 @@ type RecommendationRow = {
   cuisine: string
   servings: number
   dietary: string[]
+  status: RecommendResponse['status']
   result: RecommendResponse
   created_at: string
 }
@@ -36,6 +38,7 @@ function mapRow(row: RecommendationRow): Recommendation {
     cuisine: row.cuisine,
     servings: row.servings,
     dietary: row.dietary,
+    status: row.status,
     result: row.result,
     createdAt: row.created_at,
   }
@@ -52,6 +55,7 @@ export async function create(
       servings: input.servings,
       dietary: input.dietary,
       result: input.result,
+      status: input.result.status,
     })
     .select('id')
     .single()
