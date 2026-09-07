@@ -3,7 +3,7 @@ import type { Tool } from '@anthropic-ai/sdk/resources/messages/messages.js'
 import { anthropicClient } from '../clients/anthropic.js'
 import { systemPrompt } from '../prompt/system.js'
 import { buildUserPrompt } from '../prompt/user.js'
-import { create } from '../repositories/recommendations.js'
+import { create, findByUserId, type Recommendation } from '../repositories/recommendations.js'
 import {
   recommendResponseSchema,
   type RecommendRequest,
@@ -81,4 +81,27 @@ export async function saveRecommendation(
   }
 
   return { id: null }
+}
+
+type GetRecommendationsResult = {
+  data: Recommendation[]
+  hasMore: boolean
+  limit: number
+  count: number
+}
+
+export async function getRecommendations(
+  userId: string,
+  limit: number,
+): Promise<GetRecommendationsResult> {
+  const rows = await findByUserId(userId, limit + 1)
+  const hasMore = rows.length > limit
+  const data = hasMore ? rows.slice(0, limit) : rows
+
+  return {
+    data,
+    hasMore,
+    limit,
+    count: data.length,
+  }
 }
